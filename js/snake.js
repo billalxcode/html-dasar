@@ -152,6 +152,10 @@ function update() {
         controller()
         draw()
         checkCollision()
+    } else {
+        context.font = "20px Arial"
+        context.fillStyle = "black"
+        context.fillText("Press 'Space' to start or stop game", (width / 3), (height / 2))
     }
 }
 
