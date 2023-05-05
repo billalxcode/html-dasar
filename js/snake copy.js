@@ -85,21 +85,20 @@ function draw() {
 function changeDirection(event) {
     let speed = snakes.speed
     let keyCode = event.code
-    if (keyCode == "Space") {
-        gameStart = !gameStart
-    }
-    if ((keyCode == "ArrowLeft" || keyCode == "KeyA") && snakes.direction.x != speed) {
+    if (keyCode == "ArrowLeft" || keyCode == "KeyA") {
         snakes.direction.x = -speed
         snakes.direction.y = 0
-    } else if ((keyCode == "ArrowRight" || keyCode == "KeyD") && snakes.direction.x != -speed) {
+    } else if (keyCode == "ArrowRight" || keyCode == "KeyD") {
         snakes.direction.x = speed
         snakes.direction.y = 0
-    } else if ((keyCode == "ArrowUp" || keyCode == "KeyW") && snakes.direction.y != speed) {
+    } else if (keyCode == "ArrowUp" || keyCode == "KeyW") {
         snakes.direction.x = 0
         snakes.direction.y = -speed
-    } else if ((keyCode == "ArrowDown" || keyCode == "KeyS") && snakes.direction.y != -speed) {
+    } else if (keyCode == "ArrowDown" || keyCode == "KeyS") {
         snakes.direction.x = 0
         snakes.direction.y = speed
+    } else if (keyCode == "Space") {
+        gameStart = !gameStart
     }
 
 }
@@ -124,13 +123,6 @@ function controller() {
     } else if (snakes.bodies[0].y > width) {
         snakes.bodies[0].y = 0
     }
-
-    for (i = 1; i < snakes.bodies.length; i++) {
-        if (snakes.bodies[0].x == snakes.bodies[i].x && snakes.bodies[0].y == snakes.bodies[i].y) {
-            gameStart = false
-        }
-    }
-
     const head = {
         x: snakes.bodies[0].x + snakes.direction.x,
         y: snakes.bodies[0].y + snakes.direction.y
