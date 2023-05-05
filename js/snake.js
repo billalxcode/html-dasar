@@ -1,19 +1,22 @@
+const canvas = document.getElementById('board')
+const score = document.getElementById('score')
+const context = canvas.getContext('2d')
 const blocksize = 20
 const rows = 48
 const cols = 30
 const width = (rows * blocksize)
 const height = (cols * blocksize)
-const fpslimit = 7
+const fpslimit = 7 // limit frame per second
 
-const canvas = document.getElementById('board')
-const score = document.getElementById('score')
-const context = canvas.getContext('2d')
+let gameInterval
 
-const styles = {
+let gameState = false // set game state
+let gameOver = false // set gameover
+
+let styles = {
     snake: "lime",
-    tail: "green",
     food: "red",
-    grid: "black",
+    grid: "black"
 }
 
 let snakes = {
@@ -23,155 +26,166 @@ let snakes = {
         x: 0,
         y: 0
     },
-    bodies: [
-        {
-            x: (rows * blocksize) / 2,
-            y: (cols * blocksize) / 2
-        },
-        {
-            x: (rows * blocksize) / 2 - blocksize,
-            y: (cols * blocksize) / 2
-        },
-        {
-            x: (rows * blocksize) / 2 - (blocksize * 2),
-            y: (cols * blocksize) / 2
-        },
-        
+    body: [
+        { x: (width / 2), y: (height / 2)}, // set center position
     ]
 }
+let totalScore = snakes.body.length
 
-let foods = {}
-let totalScore = 0
+let foods = []
 
-let gameStart = true
+function drawGrid() {
+    context.strokeStyle = styles.grid
+    for (x = 0; x < width; x += blocksize) {
+        context.moveTo(x, 0)
+        context.lineTo(x, height)
+    }
+    for (y = 0; y < height; y += blocksize) {
+        context.moveTo(0, y)
+        context.lineTo(width, y)
+    }
+    context.stroke()
+}
 
 function drawSnake() {
-    context.fillStyle = styles.snake
-
-    snakes.bodies.forEach((body) => {
-        context.fillRect(body.x, body.y, snakes.size, snakes.size)
-    })
+    for (i = 0; i < snakes.body.length; i++) {
+        context.fillStyle = styles.snake
+        context.fillRect(snakes.body[i].x, snakes.body[i].y,snakes.size, snakes.size)
+    }
 }
 
 function drawFood() {
     context.fillStyle = styles.food
-    // for (i = 0; i < foods.length; i += 1) {
-    //     context.fillRect(foods[i].x, foods[i].y, snakes.size, snakes.size)
-    // }
-    context.fillRect(foods.x, foods.y, snakes.size, snakes.size)
+    foods.forEach((food) => {
+        context.fillRect(food.x, food.y, blocksize, blocksize)
+    })
 }
 
-function drawGrid() {
-    context.strokeStyle = styles.grid
-    for (xy = 0; xy < width; xy += blocksize) {
-        // Draw vertical line
-        context.moveTo(xy, 0)
-        context.lineTo(xy, height)
-
-        // Draw horizontal line
-        context.moveTo(0, xy)
-        context.lineTo(width, xy)
+function moveSnake() {
+    // check out of the board
+    if (snakes.body[0].x > width) {
+        snakes.body[0].x = 0
     }
-    context.stroke()
+    if (snakes.body[0].x < 0) {
+        snakes.body[0].x = width
+    }
+    if (snakes.body[0].y > height) {
+        snakes.body[0].y = 0
+    }
+    if (snakes.body[0].y < 0) {
+        snakes.body[0].y = height
+    }
 
+    // create new head
+    let head = {
+        x: snakes.body[0].x + snakes.direction.x,
+        y: snakes.body[0].y + snakes.direction.y
+    }
+    
+    snakes.body.unshift(head)
+    let iseat = false
+    foods.forEach((food) => {
+        if (snakes.body[0].x == food.x && snakes.body[0].y == food.y) {
+            totalScore += 1
+            snakes.speed = ((snakes.speed - blocksize) + 1) * blocksize
+            let index = foods.indexOf(food)
+            foods.splice(index, 1)
+            iseat = true
+        }
+    })
+
+    if (!iseat) {
+        snakes.body.pop()
+    }
+
+    // check gameover
+    for (i = 1; i < snakes.body.length; i += 1) {
+        if (snakes.body[0].x == snakes.body[i].x && snakes.body[0].y == snakes.body[i].y) {
+            snakes.speed = 0
+            snakes.direction.x = 0
+            snakes.direction.y = 0
+            gameOver = true
+        }
+    }
+}
+
+function placeFood() {
+    let x = Math.floor(Math.random() * rows) * blocksize
+    let y = Math.floor(Math.random() * cols) * blocksize
+
+    food = {
+        x: x,
+        y: y
+    }
+
+    foods.push(food)
 }
 
 function draw() {
+    context.clearRect(0, 0, width, height) // clear display
     drawGrid()
     drawSnake()
     drawFood()
 }
 
 function changeDirection(event) {
+    let code = event.code
     let speed = snakes.speed
-    let keyCode = event.code
-    if (keyCode == "Space") {
-        gameStart = !gameStart
-    }
-    if ((keyCode == "ArrowLeft" || keyCode == "KeyA") && snakes.direction.x != speed) {
-        snakes.direction.x = -speed
-        snakes.direction.y = 0
-    } else if ((keyCode == "ArrowRight" || keyCode == "KeyD") && snakes.direction.x != -speed) {
+    if (code == "KeyD" && snakes.direction.x != -speed) {
         snakes.direction.x = speed
         snakes.direction.y = 0
-    } else if ((keyCode == "ArrowUp" || keyCode == "KeyW") && snakes.direction.y != speed) {
+    } else if (code == "KeyA" && snakes.direction.x != speed) {
+        snakes.direction.x = -speed
+        snakes.direction.y = 0
+    } else if (code == "KeyW" && snakes.direction.y != speed) {
         snakes.direction.x = 0
         snakes.direction.y = -speed
-    } else if ((keyCode == "ArrowDown" || keyCode == "KeyS") && snakes.direction.y != -speed) {
+    } else if (code == "KeyS" && snakes.direction.y != -speed) {
         snakes.direction.x = 0
         snakes.direction.y = speed
     }
 
-}
-
-function placeFood() {
-    let x = Math.floor(Math.random() * rows) * blocksize
-    let y = Math.floor(Math.random() * cols) * blocksize
-    
-    foods = {
-        x: x,
-        y: y
-    }
-}
-
-function controller() {
-    if (snakes.bodies[0].x < 0) {
-        snakes.bodies[0].x = width
-    } else if (snakes.bodies[0].x > width) {
-        snakes.bodies[0].x = 0
-    } else if (snakes.bodies[0].y < 0) {
-        snakes.bodies[0].y = height
-    } else if (snakes.bodies[0].y > width) {
-        snakes.bodies[0].y = 0
-    }
-
-    for (i = 1; i < snakes.bodies.length; i++) {
-        if (snakes.bodies[0].x == snakes.bodies[i].x && snakes.bodies[0].y == snakes.bodies[i].y) {
-            gameStart = false
-        }
-    }
-
-    const head = {
-        x: snakes.bodies[0].x + snakes.direction.x,
-        y: snakes.bodies[0].y + snakes.direction.y
-    }
-
-    snakes.bodies.unshift(head)
-
-    if (snakes.bodies[0].x == foods.x && snakes.bodies[0].y == foods.y) {
-        totalScore += 1
-        score.textContent = totalScore
-        
-        placeFood()
-    } else {
-        snakes.bodies.pop()
+    if (code == "Space") {
+        gameState = !gameState
     }
 }
 
 function update() {
-    if (gameStart) {
+    if (gameOver) {
         context.clearRect(0, 0, width, height)
-        if (Object.keys(foods).length == 0) {
-            placeFood()
-        }
-        controller()
-        draw()
-
-        // console.log(snakes.bodies.length)
-    } else {
-        context.font = "20px Arial"
         context.fillStyle = "black"
-        context.fillText("Press 'Space' to start or stop game", (width / 5), (height / 2))
+
+        context.font = "30px Arial bold"
+        context.textAlign = "center"
+        context.textBaseLine = "middle"
+        context.fillText("Game over! Refresh to reset", (width / 2), (height / 2))
+        // clearInterval(gameInterval)
+    } else {
+        if (gameState) {
+            if (foods.length <= 3) {
+                placeFood()
+            }
+            draw()
+            moveSnake()
+    
+            score.textContent = totalScore
+        } else {
+            context.fillStyle = 'black'
+            context.font = "30px Arial bold"
+            context.textAlign = "center"
+            context.textBaseLine = "middle"
+            context.fillText("Press 'Space' to start or stop game", (width / 2), (height / 2))
+        }
     }
+
 }
 
 function init() {
     canvas.width = width
     canvas.height = height
 
-    placeFood()
-    setInterval(update, (1000 / fpslimit)) // limit fps to 14 fps
+    gameInterval = setInterval(update, 1000 / fpslimit)
+    document.onkeydown = changeDirection
 }
 
-document.onload = init()
-document.onkeydown = changeDirection
+// document.onload = init()

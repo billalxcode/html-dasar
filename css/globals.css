@@ -3,19 +3,14 @@
     padding: 0;
 }
 
-.info {
-    display: flex;
-    justify-content: space-between;
-    margin-left: 300px;
-    margin-right: 300px;
-    margin-top: 40px;
-}
 .container {
     display: flex;
     justify-content: center;
-    margin: 10px;
+    margin-top: 20px;
 }
 
-canvas {
-    border: 2px solid black;
+.card {
+    width: 400px;
+    height: 600px;
+    box-shadow: rgba(0,0,0,0.4) 0px 2px 4px, rgba(0,0,0,0.3) 0px 7px 13px -3px, rgba(0,0,0,0.2) 0px -3px 0px inset;
 }
