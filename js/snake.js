@@ -23,34 +23,42 @@ let snakes = {
         x: 0,
         y: 0
     },
-    head: {
-        x: (rows * blocksize) / 2,
-        y: (cols * blocksize) / 2
-    },
-    tails: [
+    bodies: [
+        {
+            x: (rows * blocksize) / 2,
+            y: (cols * blocksize) / 2
+        },
+        {
+            x: (rows * blocksize) / 2 - blocksize,
+            y: (cols * blocksize) / 2
+        },
+        {
+            x: (rows * blocksize) / 2 - (blocksize * 2),
+            y: (cols * blocksize) / 2
+        },
+        
     ]
 }
 
-let foods = []
+let foods = {}
 let totalScore = 0
 
-let gameStart = false
+let gameStart = true
 
 function drawSnake() {
     context.fillStyle = styles.snake
-    context.fillRect(snakes.head.x, snakes.head.y, snakes.size, snakes.size)
 
-    for (i = 0; i < snakes.tails.length; i++) {
-        context.fillStyle = styles.tail
-        context.fillRect(snakes.tails[i].x, snakes.tails[i].y, snakes.size, snakes.size)
-    }
+    snakes.bodies.forEach((body) => {
+        context.fillRect(body.x, body.y, snakes.size, snakes.size)
+    })
 }
 
 function drawFood() {
     context.fillStyle = styles.food
-    for (i = 0; i < foods.length; i += 1) {
-        context.fillRect(foods[i].x, foods[i].y, snakes.size, snakes.size)
-    }
+    // for (i = 0; i < foods.length; i += 1) {
+    //     context.fillRect(foods[i].x, foods[i].y, snakes.size, snakes.size)
+    // }
+    context.fillRect(foods.x, foods.y, snakes.size, snakes.size)
 }
 
 function drawGrid() {
@@ -74,7 +82,7 @@ function draw() {
     drawFood()
 }
 
-function keyHandler(event) {
+function changeDirection(event) {
     let speed = snakes.speed
     let keyCode = event.code
     if (keyCode == "ArrowLeft" || keyCode == "KeyA") {
@@ -99,59 +107,49 @@ function placeFood() {
     let x = Math.floor(Math.random() * rows) * blocksize
     let y = Math.floor(Math.random() * cols) * blocksize
     
-    foods.push({
+    foods = {
         x: x,
         y: y
-    })
+    }
 }
 
-function checkCollision() {
-    if (snakes.head.x >= width) {
-        snakes.head.x = 0
-    } else if (snakes.head.x <= -1) {
-        snakes.head.x = width
-    } else if (snakes.head.y >= height) {
-        snakes.head.y = 0
-    } else if (snakes.head.y <= -1) {
-        snakes.head.y = height
+function controller() {
+    if (snakes.bodies[0].x < 0) {
+        snakes.bodies[0].x = width
+    } else if (snakes.bodies[0].x > width) {
+        snakes.bodies[0].x = 0
+    } else if (snakes.bodies[0].y < 0) {
+        snakes.bodies[0].y = height
+    } else if (snakes.bodies[0].y > width) {
+        snakes.bodies[0].y = 0
+    }
+    const head = {
+        x: snakes.bodies[0].x + snakes.direction.x,
+        y: snakes.bodies[0].y + snakes.direction.y
     }
 
-    foods.forEach((food) => {
-        if (snakes.head.x == food.x && snakes.head.y == food.y) {
-            totalScore += 1
-            let index = foods.indexOf(food)
-            foods.splice(index, 1)
+    snakes.bodies.unshift(head)
 
-            score.innerText = totalScore
-
-            snakes.tails.push({
-                x: food.x,
-                y: food.y
-            })
-        }
-    })
-}
-function controller() {
-    snakes.head.x += snakes.direction.x
-    snakes.head.y += snakes.direction.y
-    
-    for (i = 0; i < snakes.tails.length; i++) {
-        snakes.tails[i] = {
-            x: snakes.tails[i].x + snakes.direction.x,
-            y: snakes.tails[i].y + snakes.direction.y
-        }
+    if (snakes.bodies[0].x == foods.x && snakes.bodies[0].y == foods.y) {
+        totalScore += 1
+        score.textContent = totalScore
+        
+        placeFood()
+    } else {
+        snakes.bodies.pop()
     }
 }
 
 function update() {
     if (gameStart) {
         context.clearRect(0, 0, width, height)
-        if (foods.length <= 2) {
+        if (Object.keys(foods).length == 0) {
             placeFood()
         }
         controller()
         draw()
-        checkCollision()
+
+        // console.log(snakes.bodies.length)
     } else {
         context.font = "20px Arial"
         context.fillStyle = "black"
@@ -168,4 +166,4 @@ function init() {
 }
 
 document.onload = init()
-document.onkeydown = keyHandler
+document.onkeydown = changeDirection
