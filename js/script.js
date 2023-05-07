@@ -1,25 +1,40 @@
-const menu = document.getElementById('menu')
-const game = document.getElementById('game')
-const formElement = document.getElementById('myform')
-const nameElement = document.getElementById('name')
-const play = document.getElementById('play')
-const playerName = document.getElementById('playerName')
+const score         = document.getElementById('score')
+const timer         = document.getElementById('timer')
+const rewindRange   = document.getElementById('rewindRange')
+const btnCancel     = document.getElementById('btn-cancel')
+const btnRewind     = document.getElementById('btn-rewind')
+const btnPlay       = document.getElementById('btn-play')
+const playerName    = document.getElementById('playerName')
 
-nameElement.addEventListener('change', function () {
-    // enable button if name is not blank
-    let name = String(nameElement.value)
-    if (name.trim() == "") {
-        play.disabled = true
+const intruction    = document.getElementById('intruction')
+const playground    = document.getElementById('playground')
+const board         = document.getElementById('board')
+const context       = board.getContext('2d')
+
+intruction.style.display = 'none'
+playground.style.display = 'block'
+let snake = new Snake(board, context, score, timer, rewindRange, btnRewind)
+
+snake.setName('Billal')
+snake.init()
+snake.start()
+
+btnPlay.addEventListener('click', function () {
+    let name = playerName.value
+    if (name == '') {
+        alert('Masukan nama kamu')
     } else {
-        play.disabled = false
+
+        snake.setName(name)
+        snake.init()
+        snake.start()
     }
 })
 
-formElement.addEventListener('submit', function(event) {
-    event.preventDefault()
-    let name = String(nameElement.value)
-    menu.style.display = 'none'
-    game.style.display = 'block'
-    playerName.textContent = name
-    init()
+playerName.addEventListener('input', function (event) {
+    if (event.target.value == "") {
+        btnPlay.setAttribute('disabled', true)
+    } else {
+        btnPlay.removeAttribute('disabled')
+    }
 })

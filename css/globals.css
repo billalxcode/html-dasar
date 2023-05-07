@@ -1,16 +1,102 @@
+@font-face {
+    font-family: "Popins";
+    src: url('../assets/Poppins-SemiBold.ttf');
+}
+
 * {
     margin: 0;
     padding: 0;
+    box-sizing: border-box;
 }
 
-.container {
+body {
+    background-color: #1e273e;
+    font-family: Popins;
+}
+
+.app {
     display: flex;
     justify-content: center;
-    margin-top: 20px;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.intruction {
+    margin-top: 1rem;
+}
+
+header {
+    text-align: center;
+}
+
+header h1 {
+    color: #fff;
+    text-shadow: 3px 3px 0 #323232;
+    font-size: 4rem;
 }
 
 .card {
-    width: 400px;
-    height: 600px;
-    box-shadow: rgba(0,0,0,0.4) 0px 2px 4px, rgba(0,0,0,0.3) 0px 7px 13px -3px, rgba(0,0,0,0.2) 0px -3px 0px inset;
+    background-color: rgba(255,255,255,.5);
+    width: 720px;
+    margin: 0 auto;
+    border-radius: 1rem;
+}
+
+.card-header {
+    background-color: rgba(255,255,255,0.3);
+    border-top-right-radius: 1rem;
+    border-top-left-radius: 1rem;
+    padding: 1rem;
+}
+
+.card-body {
+    padding: 1rem;
+}
+
+.card-body p {
+    padding-left: 1rem;
+    color: rgb(30, 30, 30);
+    margin-top: 1rem;
+}
+
+ol {
+    padding-left: 2rem;
+    color: rgb(53,50,50);
+}
+
+.play {
+    display: flex;
+    padding: 1rem;
+}
+
+.play input {
+    width: 100%;
+    border-radius: .3rem;
+    border: none;
+    padding: .3rem .5rem;
+}
+
+button {
+    transition: all .2s;
+}
+
+.play .btn {
+    background-color: #0069d9;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    padding: .5rem .7rem;
+    margin-left: 1rem;
+}
+
+.play .btn:disabled {
+    background-color: grey;
+}
+
+.play .btn:hover {
+    background-color: #5d96d4;
+}
+
+.play .btn:active {
+    background-color: #0069d9;
 }

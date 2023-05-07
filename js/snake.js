@@ -1,191 +1,252 @@
-const canvas = document.getElementById('board')
-const score = document.getElementById('score')
-const context = canvas.getContext('2d')
-const blocksize = 20
-const rows = 48
-const cols = 30
-const width = (rows * blocksize)
-const height = (cols * blocksize)
-const fpslimit = 7 // limit frame per second
-
-let gameInterval
-
-let gameState = false // set game state
-let gameOver = false // set gameover
-
-let styles = {
-    snake: "lime",
-    food: "red",
-    grid: "black"
-}
-
-let snakes = {
-    size: blocksize - 1,
-    speed: 1 * blocksize,
-    direction: {
-        x: 0,
-        y: 0
-    },
-    body: [
-        { x: (width / 2), y: (height / 2)}, // set center position
-    ]
-}
-let totalScore = snakes.body.length
-
-let foods = []
-
-function drawGrid() {
-    context.strokeStyle = styles.grid
-    for (x = 0; x < width; x += blocksize) {
-        context.moveTo(x, 0)
-        context.lineTo(x, height)
-    }
-    for (y = 0; y < height; y += blocksize) {
-        context.moveTo(0, y)
-        context.lineTo(width, y)
-    }
-    context.stroke()
-}
-
-function drawSnake() {
-    for (i = 0; i < snakes.body.length; i++) {
-        context.fillStyle = styles.snake
-        context.fillRect(snakes.body[i].x, snakes.body[i].y,snakes.size, snakes.size)
-    }
-}
-
-function drawFood() {
-    context.fillStyle = styles.food
-    foods.forEach((food) => {
-        context.fillRect(food.x, food.y, blocksize, blocksize)
-    })
-}
-
-function moveSnake() {
-    // check out of the board
-    if (snakes.body[0].x > width) {
-        snakes.body[0].x = 0
-    }
-    if (snakes.body[0].x < 0) {
-        snakes.body[0].x = width
-    }
-    if (snakes.body[0].y > height) {
-        snakes.body[0].y = 0
-    }
-    if (snakes.body[0].y < 0) {
-        snakes.body[0].y = height
-    }
-
-    // create new head
-    let head = {
-        x: snakes.body[0].x + snakes.direction.x,
-        y: snakes.body[0].y + snakes.direction.y
+class Helpers {
+    /**
+     * 
+     * @param {Number} max 
+     */
+    randomInteger(max) {
+        return Math.floor(Math.random() * max) + 1
     }
     
-    snakes.body.unshift(head)
-    let iseat = false
-    foods.forEach((food) => {
-        if (snakes.body[0].x == food.x && snakes.body[0].y == food.y) {
-            totalScore += 1
-            snakes.speed = ((snakes.speed - blocksize) + 1) * blocksize
-            let index = foods.indexOf(food)
-            foods.splice(index, 1)
-            iseat = true
+    /**
+     * Random Integer with step
+     * 
+     * @param {Number} max
+     * @param {Number} step
+     */
+    randomIntegerWithStep(max, step) {
+        return (this.randomInteger(max) + 1) * step
+    }
+}
+
+class Snake {
+    /**
+     * 
+     * @param {HTMLElement} canvas 
+     * @param {CanvasRenderingContext2D} context 
+     * @param {HTMLElement} score 
+     * @param {HTMLElement} timer 
+     * @param {HTMLElement} rewindRange 
+     * @param {HTMLElement} rewindButton 
+     */
+    constructor(canvas, context, score, timer, rewindRange, rewindButton) {
+        this.canvas = canvas
+        this.context = context
+        this.score = score
+        this.timer = timer
+        this.rewindRange = rewindRange
+        this.rewindButton = rewindButton
+
+        this.animationFrame = undefined
+        
+        this.blocksize = 20
+        this.rows = 48
+        this.cols = 30
+        this.width = (this.rows * this.blocksize)
+        this.height = (this.cols * this.blocksize)
+
+        this.blocks = []
+
+        this.player = {
+            score: 0,
+            name: ""
         }
-    })
 
-    if (!iseat) {
-        snakes.body.pop()
-    }
-
-    // check gameover
-    for (i = 1; i < snakes.body.length; i += 1) {
-        if (snakes.body[0].x == snakes.body[i].x && snakes.body[0].y == snakes.body[i].y) {
-            snakes.speed = 0
-            snakes.direction.x = 0
-            snakes.direction.y = 0
-            gameOver = true
+        this.snakes = {
+            size: this.blocksize,
+            speed: 1 * this.blocksize,
+            ms: 100,
+            direction: {
+                x: 0,
+                y: 0
+            },
+            color: {
+                fill: "#ffd32a"
+            },
+            body: []
         }
-    }
-}
 
-function placeFood() {
-    let x = Math.floor(Math.random() * rows) * blocksize
-    let y = Math.floor(Math.random() * cols) * blocksize
+        this.foods = [
+            
+        ]
 
-    food = {
-        x: x,
-        y: y
+        this.secondPassed = 0
+        this.helper = new Helpers()
     }
 
-    foods.push(food)
-}
-
-function draw() {
-    context.clearRect(0, 0, width, height) // clear display
-    drawGrid()
-    drawSnake()
-    drawFood()
-}
-
-function changeDirection(event) {
-    let code = event.code
-    let speed = snakes.speed
-    if (code == "KeyD" && snakes.direction.x != -speed) {
-        snakes.direction.x = speed
-        snakes.direction.y = 0
-    } else if (code == "KeyA" && snakes.direction.x != speed) {
-        snakes.direction.x = -speed
-        snakes.direction.y = 0
-    } else if (code == "KeyW" && snakes.direction.y != speed) {
-        snakes.direction.x = 0
-        snakes.direction.y = -speed
-    } else if (code == "KeyS" && snakes.direction.y != -speed) {
-        snakes.direction.x = 0
-        snakes.direction.y = speed
+    /**
+     * Set player name
+     * 
+     * @param {String} name 
+     */
+    setName(name) {
+        this.player.name = name
     }
 
-    if (code == "Space") {
-        gameState = !gameState
-    }
-}
+    init() {
+        this.canvas.width = this.width
+        this.canvas.height = this.height
 
-function update() {
-    if (gameOver) {
-        context.clearRect(0, 0, width, height)
-        context.fillStyle = "black"
-
-        context.font = "30px Arial bold"
-        context.textAlign = "center"
-        context.textBaseLine = "middle"
-        context.fillText("Game over! Refresh to reset", (width / 2), (height / 2))
-        // clearInterval(gameInterval)
-    } else {
-        if (gameState) {
-            if (foods.length <= 3) {
-                placeFood()
+        for (let x = 0; x < this.width; x += this.blocksize) {
+            let rows = []
+            for (let y = 0; y < this.height; y += this.blocksize) {
+                let xblock = x / this.blocksize % 2
+                let yblock = y / this.blocksize % 2
+                let fill = (xblock == 0 && yblock == 1) || (xblock == 1 && yblock == 0) ? "#1c4e6b" : "#133954"
+                rows.push({
+                    x: x,
+                    y: y,
+                    fill: fill,
+                    stroke: 'black'
+                })
             }
-            draw()
-            moveSnake()
+
+            this.blocks.push(rows)
+        }
+
+        for (let i = 0; i < 5; i += 1) {
+            let x = (this.width / 2) - (this.blocksize * i)
+            let y = (this.height / 2)
+
+            this.snakes.body.push({
+                x: x,
+                y: y
+            })
+        }
+
+        for (let i = 0; i < 5; i++) {
+            this.makeFood()
+        }
+
+        this.handleEvent()
+    }
+
+    /**
+     * Create food location and save to variable foods
+     */
+    makeFood() {
+        if (this.foods.length <= 5) {
+            let x = this.helper.randomIntegerWithStep(this.rows, this.blocksize)
+            let y = this.helper.randomIntegerWithStep(this.cols, this.blocksize)
     
-            score.textContent = totalScore
-        } else {
-            context.fillStyle = 'black'
-            context.font = "30px Arial bold"
-            context.textAlign = "center"
-            context.textBaseLine = "middle"
-            context.fillText("Press 'Space' to start or stop game", (width / 2), (height / 2))
+            this.foods.push({
+                x: x,
+                y: y
+            })
+        }
+    }
+    
+    drawBoard() {
+        for (let row = 0; row < this.blocks.length; row+=1) {
+            for (let col = 0; col < this.blocks[row].length; col+=1) {
+                let block = this.blocks[row][col]
+                this.context.fillStyle = block.fill
+                this.context.strokeStyle = block.stroke
+                this.context.fillRect(block.x, block.y, this.blocksize, this.blocksize)
+                this.context.stroke()
+            }
         }
     }
 
+    drawSnake() {
+        for (let i = 0; i < this.snakes.body.length; i += 1) {
+            let snake = this.snakes.body[i]
+            this.context.fillStyle = this.snakes.color.fill
+            this.context.fillRect(snake.x, snake.y, this.snakes.size, this.snakes.size)
+        }
+    }
+
+    drawFood() {
+        for (let i = 0; i < this.foods.length; i++) {
+            this.context.fillStyle = "red"
+            this.context.fillRect(this.foods[i].x, this.foods[i].y, this.snakes.size, this.snakes.size)
+        }
+    }
+
+    handleEvent() {
+        let _this = this
+        let speed = this.snakes.speed
+        let direction = this.snakes.direction
+
+        document.addEventListener('keydown', function (event) {
+            let keycode = event.key.toLowerCase()
+            if (keycode == "a" && direction.x != speed) {
+                direction.x = -speed
+                direction.y = 0
+            } else if (keycode == "d" && direction.x != -speed) {
+                direction.x = speed
+                direction.y = 0
+            } else if (keycode == "w" && direction.y != speed) {
+                direction.x = 0
+                direction.y = -speed
+            } else if (keycode == "s" && direction.y != -speed) {
+                direction.x = 0
+                direction.y = speed
+            }
+        })
+
+        this.snakes.direction = direction 
+
+        // make new food every 3 second
+        setInterval(function() {
+            console.log(_this.foods.length)
+            _this.makeFood()
+        }, 3000)
+    }
+
+    checkSnakeEatFood() {
+        let head = this.snakes.body[0]
+        let eaten = false
+        for (let i = 0; i < this.foods.length; i++) {
+            let food = this.foods[i]
+            if (head.x == food.x && head.y == food.y) {
+                eaten = true
+                this.foods.splice(i, 1)
+                return true
+            }
+        } 
+        return eaten
+    }
+
+    moveSnake() {
+        let head = {
+            x: this.snakes.body[0].x + this.snakes.direction.x,
+            y: this.snakes.body[0].y + this.snakes.direction.y
+        }
+        if (head.x > this.width) head.x = 0
+        if (head.y > this.height) head.y = 0
+        if (head.x < 0) head.x = this.width
+        if (head.y < 0) head.y = this.height
+        
+        this.snakes.body.unshift(head)
+
+        let eaten = this.checkSnakeEatFood()
+        if (!eaten) this.snakes.body.pop()
+        for (let i = 1; i < this.snakes.body.length; i++) {
+            // if (head.x == this.snakes.body[i].x && head.y == this.snakes.body[i].y) alert("Game Over")
+        }
+    }
+
+    render(timestamp) {
+        // Clear canvas
+        this.context.clearRect(0, 0, this.width, this.height)
+
+        this.drawBoard()
+        this.drawSnake()
+        this.drawFood()
+        let passed = timestamp - this.secondPassed
+        if (passed > this.snakes.ms) {
+            this.moveSnake()
+            this.secondPassed = timestamp
+        }
+
+        this.animationFrame = requestAnimationFrame((_timestamp) => {
+            this.render(_timestamp)
+        })
+    }
+
+    start() {
+        this.animationFrame = requestAnimationFrame((timestamp) => {
+            this.render(0)
+        })
+    }
 }
-
-function init() {
-    canvas.width = width
-    canvas.height = height
-
-    gameInterval = setInterval(update, 1000 / fpslimit)
-    document.onkeydown = changeDirection
-}
-
-// document.onload = init()

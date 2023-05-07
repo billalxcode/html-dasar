@@ -1,20 +1,65 @@
-.game {
-    display: none;
-}
-.info {
-    display: flex;
-    justify-content: space-between;
-    margin-left: 300px;
-    margin-right: 300px;
-    margin-top: 40px;
-}
-
-.game-container {
+.playground {
     display: flex;
     justify-content: center;
-    margin: 10px;
+    align-items: center;
+    height: 800px;
+    width: 1080px;
+    display: none;
+    flex-direction: column;
+    margin: 0 auto;
 }
 
-canvas {
-    border: 2px solid black;
+.scoreboard {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    padding: 3rem 5rem;
+    align-items: flex-end;
+    font-size: 1.3rem;
+    color: #fff;
+}
+
+.scoreboard .logo {
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.options {
+    width: 100%;
+    padding: 0 5rem;
+    text-align: center;
+}
+
+.btn-lg {
+    padding: 1.5rem 4rem;
+    border: none;
+    cursor: pointer;
+    border-radius: 50rem;
+    font-weight: bold;
+    color: #fff;
+    text-size-adjust: 2rem;
+}
+
+.btn-rewind {
+    background-color: #ff3f34;
+}
+
+.btn-cancel {
+    color: #333;
+    margin-right: 1rem;
+    /* display: none; */
+}
+
+input#rewindRange {
+    width: 100%;
+    display: none;
+}
+
+.mt-5 {
+    margin-top: 2rem;
+}
+
+.buttons {
+    display: flex;
+    justify-content: center;
 }
