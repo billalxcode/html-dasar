@@ -200,6 +200,7 @@ class Snake {
             let food = this.foods[i]
             if (head.x == food.x && head.y == food.y) {
                 eaten = true
+                this.score.textContent = parseInt(this.score.textContent) + 1
                 this.foods.splice(i, 1)
                 return true
             }
