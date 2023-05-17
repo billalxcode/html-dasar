@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Breakout Javascript</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container" id="container">
+        <p>Score: <span id="score">0</span></p>
+        <div>
+            <canvas id="board"></canvas>
+        </div>
+    </div>
+
+    <div class="container" id="errorMessage" style="display: none;">
+        <p class="errorMessage">Sorry, the device you are using is not supported</p>
+    </div>
+
+    <script src="./js/player.js"></script>
+    <script src="./js/bullet.js"></script>
+    <script src="./js/brick.js"></script>
+    <script src="./js/game.js"></script>
+    <script>
+        const container = document.getElementById('container')
+        const canvas = document.getElementById('board')
+        const score = document.getElementById('score')
+        const context = canvas.getContext('2d')
+
+        function detectMobile() {
+            const toMatch = [
+                /Android/i,
+                /webOS/i,
+                /iPhone/i,
+                /iPad/i,
+                /iPod/i,
+                /BlackBerry/i,
+                /Windows Phone/i
+            ];
+    
+            return toMatch.some((toMatchItem) => {
+                return navigator.userAgent.match(toMatchItem);
+            });
+        }
+
+        function init() {
+            const game = new Game(canvas, context, score)
+            game.init()
+            game.start()
+        }
+
+        const isMobile = detectMobile()
+        if (!isMobile) {
+            document.onload = init()
+        } else {
+            container.style.display = "none"
+            document.getElementById('errorMessage').style.display = "block"
+        }
+    </script>
+</body>
+</html>
