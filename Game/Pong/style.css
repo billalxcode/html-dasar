@@ -1,0 +1,29 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: black;
+}
+
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+    flex-direction: column;
+}
+
+canvas {
+    border: 2px solid white;
+}
+
+.gametitle {
+    color: white;
+    font-weight: bold;
+    text-transform: uppercase;
+    padding-bottom: 5px;
+    font-size: 20px;
+}
