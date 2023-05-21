@@ -51,15 +51,15 @@ class Ground {
         this.y = this.geometry.height - 100
     }
 
-    moveParticle() {
-        for (let i = 0; i < this.particles.length; i++) {
-            this.particles[i].x -= this.moveSpeed
+    // moveParticle(index) {
+    //     for (let i = 0; i < this.particles.length; i++) {
+    //         this.particles[i].x -= this.moveSpeed
 
-            if (this.particles[i].x < 0) {
-                this.particles.splice(i, 1)
-            }
-        }
-    }
+    //         if (this.particles[i].x < 0) {
+    //             this.particles.splice(i, 1)
+    //         }
+    //     }
+    // }
 
     drawParticle() {
         for (let i = 0; i < this.particles.length; i++) {
@@ -86,6 +86,6 @@ class Ground {
         this.context.fill()
         this.context.stroke()
 
-        this.drawParticle()
+        // this.drawParticle()
     }
 }

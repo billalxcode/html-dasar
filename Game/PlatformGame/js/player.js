@@ -12,15 +12,19 @@ class Player {
         }
 
         this.blocksize = 50
-        this.x = 50
+        this.x = 0
         this.y = 0
         this.gravityForce = 7
         this.moveSpeed = 5
-        
+        this.defaultX = 0
+
         this.maxJump = this.gravityForce * 10
         this.jumpSpeed = 10
         this.isJump = false
         this.jumpY = 0
+
+        this.width = this.blocksize
+        this.height = this.blocksize
 
         this.ground = {
             width: 0,
@@ -32,6 +36,8 @@ class Player {
 
     setGeometry(geometry) {
         this.geometry = geometry
+        this.x = this.geometry.width / 2 - (this.width * 3)
+        this.defaultX = geometry.width / 2 - (this.width * 3)
     }
 
     setGround({ width, height, y}) {
@@ -44,7 +50,7 @@ class Player {
         let _this = this
         document.onkeydown = (event) => {
             let code = event.code
-            if (code == "Space") {
+            if (code == "Space" && _this.ground.isGround) {
                 this.isJump = true
                 this.jumpY = this.y
             } else if (code == "KeyA") {
@@ -80,10 +86,10 @@ class Player {
     
     draw() {
         this.context.fillStyle = "white"
-        this.context.fillRect(this.x, this.y, this.blocksize, this.blocksize)
+        this.context.fillRect(this.x, this.y, this.width, this.height)
 
         // draw eye
         this.context.fillStyle = "black"
-        this.context.fillRect(this.x + this.blocksize - 20, this.y + (this.blocksize / 5), 20, 10)
+        this.context.fillRect(this.x + this.width - 20, this.y + (this.height / 5), 20, 10)
     }
 }
